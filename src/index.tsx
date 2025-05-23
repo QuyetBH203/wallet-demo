@@ -3,9 +3,6 @@ import { Button } from '@/components/ui/button'
 import { ethers } from 'ethers'
 import PrivateKeyDialog from './private-key'
 import { useWalletAddress } from '@/hook/useWalletAddress'
-import { useBscBalance } from '@/hook/useBscBalance'
-import SendModal from './send-modal'
-import ReceiveModal from './receive-modal'
 
 export default function TransactionPage() {
   const { walletAddress, error } = useWalletAddress()
@@ -14,11 +11,6 @@ export default function TransactionPage() {
   const [decryptedPrivateKey, setDecryptedPrivateKey] = useState<string | null>(null)
   const [privateKeyError, setPrivateKeyError] = useState<string | null>(null)
   const [isRevealingPk, setIsRevealingPk] = useState(false)
-  const { balance } = useBscBalance(walletAddress)
-  const [recipientAddress, setRecipientAddress] = useState('')
-  const [sendAmount, setSendAmount] = useState('')
-  const [showSendModal, setShowSendModal] = useState(false)
-  const [showReceiveModal, setShowReceiveModal] = useState(false)
 
   const holdTimer = useRef<NodeJS.Timeout | null>(null)
   const HOLD_DURATION = 3000
@@ -91,13 +83,9 @@ export default function TransactionPage() {
     setIsRevealingPk(false)
   }, [])
 
-  const handleSend = async () => {
-    console.log('Send', sendAmount, 'BNB to', recipientAddress)
-    // TODO: implement actual send logic with ethers.js signer
-  }
-
   return (
-    <div className='flex flex-col items-center justify-start h-full p-4 gap-4 pt-6'>
+    <div className='flex flex-col items-center justify-start h-full p-4 gap-4 pt-10'>
+      <h1 className='text-3xl font-bold mb-2'>Home Page</h1>
       <div className='mb-4'>
         <Button
           variant='destructive'
@@ -124,52 +112,29 @@ export default function TransactionPage() {
         <div className='w-full max-w-lg p-4 bg-gray-50 border border-gray-300 rounded-lg shadow'>
           <h2 className='text-xl font-semibold mb-3 text-gray-700'>Your Wallet Address:</h2>
           <p
-            className='font-mono text-sm bg-gray-200 p-1 rounded break-all cursor-pointer whitespace-nowrap hover:bg-gray-300'
-            onClick={() => walletAddress && navigator.clipboard.writeText(`0x${walletAddress}`)}
+            className='font-mono text-sm bg-gray-200 p-3 rounded break-all cursor-pointer hover:bg-gray-300'
+            onClick={() => walletAddress && navigator.clipboard.writeText(walletAddress)}
             title='Click to copy address'
           >
-            {`0x${walletAddress}`}
+            {walletAddress}
           </p>
-          <p className='text-base mt-2 text-center'>Balance: {balance} BSC</p>
+          <p className='text-xs text-gray-500 mt-2 text-center'>Click the address to copy it.</p>
         </div>
       )}
 
       {!walletAddress && !error && <p>Loading wallet address...</p>}
-      <div className='w-full bg-gray-600 p-[1px]'></div>
 
-      <div className='mt-4 w-full max-w-lg'>
-        <h2 className='text-xl font-semibold mb-3 text-gray-700 text-center'>Action:</h2>
-        <div className='flex flex-row justify-between'>
-          <Button
-            variant='outline'
-            className='bg-orange-500 border-2 border-black'
-            onClick={() => setShowSendModal(true)}
-          >
+      <div className='mt-8 w-full max-w-lg'>
+        <h2 className='text-xl font-semibold mb-3 text-gray-700'>Action:</h2>
+        <div className=' flex flex-row justify-between'>
+          <Button variant='outline' className='bg-orange-500 border-2 border-black'>
             Send
           </Button>
-          <Button
-            variant='outline'
-            className='bg-orange-500 border-2 border-black'
-            onClick={() => setShowReceiveModal(true)}
-          >
+          <Button variant='outline' className='bg-orange-500 border-2 border-black'>
             Receive
           </Button>
         </div>
       </div>
-      {showSendModal && (
-        <SendModal
-          recipientAddress={recipientAddress}
-          setRecipientAddress={setRecipientAddress}
-          sendAmount={sendAmount}
-          setSendAmount={setSendAmount}
-          handleSend={handleSend}
-          open={showSendModal}
-          onOpenChange={setShowSendModal}
-        />
-      )}
-      {showReceiveModal && (
-        <ReceiveModal walletAddress={walletAddress} open={showReceiveModal} onOpenChange={setShowReceiveModal} />
-      )}
 
       {showPrivateKeyDialog && (
         <PrivateKeyDialog
