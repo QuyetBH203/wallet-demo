@@ -6,6 +6,8 @@ import { useWalletAddress } from '@/hook/useWalletAddress'
 import { useBscBalance } from '@/hook/useBscBalance'
 import SendModal from './send-modal'
 import ReceiveModal from './receive-modal'
+import { useSendBsc } from '@/hook/useSendBsc'
+import toast from 'react-hot-toast'
 
 export default function TransactionPage() {
   const { walletAddress, error } = useWalletAddress()
@@ -14,7 +16,7 @@ export default function TransactionPage() {
   const [decryptedPrivateKey, setDecryptedPrivateKey] = useState<string | null>(null)
   const [privateKeyError, setPrivateKeyError] = useState<string | null>(null)
   const [isRevealingPk, setIsRevealingPk] = useState(false)
-  const { balance } = useBscBalance(walletAddress)
+  const { balance, refetch } = useBscBalance(walletAddress)
   const [recipientAddress, setRecipientAddress] = useState('')
   const [sendAmount, setSendAmount] = useState('')
   const [showSendModal, setShowSendModal] = useState(false)
@@ -38,6 +40,7 @@ export default function TransactionPage() {
       holdTimer.current = null
     }
   }, [])
+  const { sendToken } = useSendBsc()
 
   const handleRevealPrivateKeyInternal = useCallback(async () => {
     if (!passwordForPrivateKey) {
@@ -68,6 +71,8 @@ export default function TransactionPage() {
 
       const decryptedWallet = await ethers.Wallet.fromEncryptedJson(encryptedKeystoreJson, passwordForPrivateKey)
       setDecryptedPrivateKey(decryptedWallet.privateKey)
+      // Store the unlocked private key in sessionStorage
+      sessionStorage.setItem('unlockedPrivateKey', decryptedWallet.privateKey)
     } catch (e) {
       console.error('Failed to decrypt wallet for PK:', e)
       if (
@@ -79,6 +84,8 @@ export default function TransactionPage() {
         setPrivateKeyError('Failed to decrypt wallet. Check password or keystore.')
       }
       setDecryptedPrivateKey(null)
+      // Clear any previously stored private key on error
+      sessionStorage.removeItem('unlockedPrivateKey')
     }
     setIsRevealingPk(false)
   }, [passwordForPrivateKey])
@@ -93,7 +100,24 @@ export default function TransactionPage() {
 
   const handleSend = async () => {
     console.log('Send', sendAmount, 'BNB to', recipientAddress)
-    // TODO: implement actual send logic with ethers.js signer
+    try {
+      const tx = await sendToken(recipientAddress, sendAmount)
+      if (tx) {
+        toast.success('Transaction sent successfully')
+        setShowSendModal(false)
+        setRecipientAddress('')
+        setSendAmount('')
+        refetch()
+      } else {
+        toast.error('Transaction failed')
+        setShowSendModal(false)
+        setRecipientAddress('')
+        setSendAmount('')
+      }
+      console.log('Transaction sent:', tx)
+    } catch (error) {
+      console.error('Error sending BNB:', error)
+    }
   }
 
   return (
