@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { ethers } from 'ethers'
+import { ethers, isAddress } from 'ethers'
 import { BSC_RPC_URL } from '@/constants'
 import { useWalletAddress } from './useWalletAddress'
 import { RpcError } from 'viem'
@@ -21,30 +21,58 @@ export const useSendBsc = () => {
     async (recipientAddress: string, amount: string) => {
       try {
         if (!walletAddress) {
-          throw new Error('No wallet address available')
+          throw new Error('Wallet address not available')
         }
 
+        if (!isAddress(recipientAddress)) {
+          throw new Error('Invalid recipient address')
+        }
+
+        if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+          throw new Error('Invalid amount')
+        }
+
+        // Get private key from a more secure storage (consider using a secure vault)
         const privateKey = sessionStorage.getItem('unlockedPrivateKey')
         if (!privateKey) {
-          throw new Error('No unlocked private key found. Please login or reveal your key first.')
+          throw new Error('No private key found. Please authenticate first.')
         }
-        // Create a signer with the private key and BSC provider
+
+        // Create signer
         const signer = new ethers.Wallet(privateKey, provider)
+
+        // Validate balance
+        const balance = await provider.getBalance(walletAddress)
+        const amountInWei = ethers.parseEther(amount)
+        if (balance < amountInWei) {
+          throw new Error('Insufficient balance')
+        }
+
+        // Estimate gas
+        const gasPrice = await provider.getFeeData()
+        const gasLimit = 21000 // Standard gas limit for simple transfers
+
         // Prepare and send transaction
         const tx = await signer.sendTransaction({
           to: recipientAddress,
-          value: ethers.parseEther(amount)
+          value: amountInWei,
+          gasLimit,
+          gasPrice: gasPrice.gasPrice
         })
-        // Wait for confirmation
-        await tx.wait()
-        const response = await provider.waitForTransaction(tx.hash, 1)
-        if (response?.status == 0) {
+
+        // Wait for transaction confirmation
+        const receipt = await provider.waitForTransaction(tx.hash, 1, 60000) // 60s timeout
+        if (receipt?.status === 0) {
           throw new Error('Transaction failed')
         }
-        return response?.status
+
+        toast.success(`Transaction successful: ${tx.hash}`)
+        return receipt?.status
       } catch (error) {
-        toast.error('Failed to send Bsc: ' + (error as RpcError)?.shortMessage || 'Unknown error')
-        console.log('Error in buy transaction:', error)
+        const err = error as RpcError
+        const errorMessage = err.shortMessage || err.message || 'Unknown error'
+        toast.error(`Failed to send BNB: ${errorMessage}`)
+        console.error('Transaction error:', error)
         return null
       }
     },

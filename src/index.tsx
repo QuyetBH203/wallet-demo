@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { ethers } from 'ethers'
-import PrivateKeyDialog from './private-key'
+import PrivateKeyDialog from './pages/transaction-page/private-key'
 import { useWalletAddress } from '@/hook/useWalletAddress'
 
 export default function TransactionPage() {
