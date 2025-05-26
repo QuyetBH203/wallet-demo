@@ -8,6 +8,8 @@ import SendModal from './send-modal'
 import ReceiveModal from './receive-modal'
 import { useSendBsc } from '@/hook/useSendBsc'
 import toast from 'react-hot-toast'
+import ImportToken from '../import-token'
+import ListToken from '../list-token'
 
 export default function TransactionPage() {
   const { walletAddress, error } = useWalletAddress()
@@ -180,6 +182,9 @@ export default function TransactionPage() {
           </Button>
         </div>
       </div>
+      <div className='w-full bg-gray-600 p-[1px]'></div>
+      <ImportToken />
+      <ListToken />
       {showSendModal && (
         <SendModal
           recipientAddress={recipientAddress}

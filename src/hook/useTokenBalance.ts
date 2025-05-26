@@ -14,9 +14,13 @@ export const useTokenErc20Balance = (mint: string) => {
     ;(async () => {
       try {
         if (!walletAddress || !mint) return
-        const signer = await provider.getSigner()
+        const privateKey = sessionStorage.getItem('unlockedPrivateKey')
+        if (!privateKey) {
+          throw new Error('No unlocked private key found. Please login or reveal your key first.')
+        }
+        const signer = new ethers.Wallet(privateKey, provider)
         const tokenContract = new ethers.Contract(mint, erc20Abi, signer)
-        const rawBalance = await tokenContract.balanceOf(walletAddress)
+        const rawBalance = await tokenContract.balanceOf(`0x${walletAddress}`)
         setBalance(formatUnits(rawBalance, 18))
       } catch (error) {
         console.log('Error getting token balance:', error)

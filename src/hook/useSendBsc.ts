@@ -42,7 +42,7 @@ export const useSendBsc = () => {
         const signer = new ethers.Wallet(privateKey, provider)
 
         // Validate balance
-        const balance = await provider.getBalance(walletAddress)
+        const balance = await provider.getBalance(`0x${walletAddress}`)
         const amountInWei = ethers.parseEther(amount)
         if (balance < amountInWei) {
           throw new Error('Insufficient balance')
