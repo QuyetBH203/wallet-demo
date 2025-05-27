@@ -148,7 +148,7 @@ export default function TransactionPage() {
 
       {walletAddress && (
         <div className='w-full max-w-lg p-4 bg-gray-50 border border-gray-300 rounded-lg shadow'>
-          <h2 className='text-xl font-semibold mb-3 text-gray-700'>Your Wallet Address:</h2>
+          <h2 className='text-xl font-semibold mb-3 text-center text-gray-700'>Your Wallet Address:</h2>
           <p
             className='font-mono text-sm bg-gray-200 p-1 rounded break-all cursor-pointer whitespace-nowrap hover:bg-gray-300'
             onClick={() => walletAddress && navigator.clipboard.writeText(`0x${walletAddress}`)}

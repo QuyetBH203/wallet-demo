@@ -29,6 +29,7 @@ export const useTokenErc20Balance = (mint: string) => {
   }, [walletAddress, mint, refetch, provider])
 
   const refetchBalance = () => {
+    console.log('refetchBalance')
     setRefetch((prev) => !prev)
   }
 

@@ -24,7 +24,7 @@ export const useSendTokenErc20 = () => {
         // Create a signer with the private key and BSC provider
         const signer = new ethers.Wallet(privateKey, provider)
         const contract = new ethers.Contract(tokenAddress, erc20Abi, signer)
-        const balance = await contract.balanceOf(walletAddress)
+        const balance = await contract.balanceOf(`0x${walletAddress}`)
         const amountInWei = parseUnits(amount, 18)
 
         if (balance < amountInWei) {
