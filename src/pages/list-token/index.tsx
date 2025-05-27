@@ -5,36 +5,47 @@ import type { TokenInfo } from '@/type/token'
 import { useNavigate } from 'react-router-dom'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { useTokenStore } from '@/store/useTokenErc20'
 
 export default function ListToken() {
   const [tokens, setTokens] = useState<TokenInfo[]>([])
   const [loading, setLoading] = useState(true)
+  const { refetch } = useTokenStore()
 
-  useEffect(() => {
-    const loadTokens = async () => {
-      setLoading(true)
-      try {
-        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-          chrome.storage.local.get(['erc20Tokens'], (result) => {
-            const storedTokens = result.erc20Tokens ? JSON.parse(result.erc20Tokens) : []
-            setTokens(storedTokens)
-            setLoading(false)
-          })
-        } else {
-          // Fallback for development environment
-          const storedTokensStr = localStorage.getItem('erc20Tokens')
-          const storedTokens = storedTokensStr ? JSON.parse(storedTokensStr) : []
+  const loadTokens = async () => {
+    setLoading(true)
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['erc20Tokens'], (result) => {
+          const storedTokens = result.erc20Tokens ? JSON.parse(result.erc20Tokens) : []
           setTokens(storedTokens)
           setLoading(false)
-        }
-      } catch (error) {
-        console.error('Error loading tokens:', error)
+        })
+      } else {
+        // Fallback for development environment
+        const storedTokensStr = localStorage.getItem('erc20Tokens')
+        const storedTokens = storedTokensStr ? JSON.parse(storedTokensStr) : []
+        setTokens(storedTokens)
         setLoading(false)
       }
+    } catch (error) {
+      console.error('Error loading tokens:', error)
+      setLoading(false)
     }
+  }
 
+  // Initial load
+  useEffect(() => {
     loadTokens()
   }, [])
+
+  // Refresh when refetch changes
+  useEffect(() => {
+    if (refetch !== undefined) {
+      console.log('Refetching tokens due to refetch change:', refetch)
+      loadTokens()
+    }
+  }, [refetch])
 
   return (
     <>

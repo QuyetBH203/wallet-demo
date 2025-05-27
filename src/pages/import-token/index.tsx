@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useTokenErc20Infor } from '@/hook/useTokenErc20Infor'
+import { useTokenStore } from '@/store/useTokenErc20'
 import type { TokenInfo } from '@/type/token'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
@@ -18,6 +19,7 @@ export default function ImportToken() {
   const [tokenAddress, setTokenAddress] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { tokenName, tokenSymbol, tokenDecimals } = useTokenErc20Infor(tokenAddress)
+  const { refreshData } = useTokenStore()
 
   const handleSubmit = async () => {
     if (!tokenAddress || !tokenName || !tokenSymbol) {
@@ -66,6 +68,7 @@ export default function ImportToken() {
             setIsSubmitting(false)
           })
         })
+        refreshData()
       } else {
         // Fallback for development environment
         console.log('Chrome storage API not available, using localStorage for development')
@@ -91,6 +94,7 @@ export default function ImportToken() {
         toast.success(`${tokenSymbol} token added successfully`)
         setOpen(false)
         setIsSubmitting(false)
+        refreshData()
       }
       console.log('Token added successfully')
     } catch (error) {
