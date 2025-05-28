@@ -13,6 +13,7 @@ import { useTokenStore } from '@/store/useTokenErc20'
 import type { TokenInfo } from '@/type/token'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { RefreshCw } from 'lucide-react'
 
 export default function ImportToken() {
   const [open, setOpen] = useState(false)
@@ -111,14 +112,24 @@ export default function ImportToken() {
     setOpen(isOpen)
   }
 
+  const handleRefresh = () => {
+    refreshData()
+  }
+
   return (
     <>
       <div className='flex flex-col w-full'>
-        <div className='flex w-full justify-end'>
+        <div className='flex w-full justify-between'>
+          <div>
+            <Button onClick={handleRefresh} className='w-28 h-10 flex items-center justify-center'>
+              <RefreshCw className='w-4 h-4 mr-2' />
+              Refresh
+            </Button>
+          </div>
           <div>
             <Dialog open={open} onOpenChange={handleOpenChange}>
               <DialogTrigger asChild>
-                <Button>Import Token</Button>
+                <Button className='w-28 h-10'>Import Token</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>

@@ -37,15 +37,9 @@ export default function ListToken() {
   // Initial load
   useEffect(() => {
     loadTokens()
-  }, [])
+  }, [refetch])
 
   // Refresh when refetch changes
-  useEffect(() => {
-    if (refetch !== undefined) {
-      console.log('Refetching tokens due to refetch change:', refetch)
-      loadTokens()
-    }
-  }, [refetch])
 
   return (
     <>
